@@ -78,6 +78,10 @@ module MARC
     extend  ControlFieldClassMixin
     include ControlFieldMixin
     
+    def self.hello
+      puts "HELLO!!!!"
+    end
+    
     # the tag value (007, 008, etc)
     attr_accessor :tag
 
