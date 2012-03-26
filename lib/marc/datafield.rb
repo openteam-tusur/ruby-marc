@@ -1,3 +1,4 @@
+require 'marc/subfield'
 module MARC
   # MARC records contain data fields, each of which has a tag, 
   # indicators and subfields. Tags for data fields must are all
@@ -19,6 +20,67 @@ module MARC
 
   module DataFieldMixins
     include Enumerable
+
+    # Create a new field with tag, indicators and subfields.
+    # Subfields are passed in as comma separated list of 
+    # MARC::Subfield objects, 
+    # 
+    #   field = MARC::DataField.new('245','0','0',
+    #     MARC::Subfield.new('a', 'Consilience :'),
+    #     MARC::Subfield.new('b', 'the unity of knowledge ',
+    #     MARC::Subfield.new('c', 'by Edward O. Wilson.'))
+    # 
+    # or using a shorthand:
+    # 
+    #   field = MARC::DataField.new('245','0','0',
+    #     ['a', 'Consilience :'],['b','the unity of knowledge ',
+    #     ['c', 'by Edward O. Wilson.'] )
+
+    def initialize(itag, ii1=' ', ii2=' ', *isubfields)
+      # if the tag is less than 3 characters long and 
+      # the string is all numeric then we pad with zeros
+      if itag.length < 3 and /^[0-9]*$/ =~ itag
+        self.tag = "%03d" % itag
+      else
+        self.tag = itag 
+      end
+      # can't allow nil to be passed in or else it'll 
+      # screw us up later when we try to encode
+      self.indicator1 = ii1 == nil ? ' ' : ii1
+      self.indicator2 = ii2 == nil ? ' ' : ii2
+      
+
+      # must use MARC::ControlField for tags < 010 or
+      # those in MARC::ControlField#extra_control_fields
+      
+      if MARC::ControlField.control_tag?(@tag)
+        raise MARC::Exception.new(),
+          "MARC::DataField objects can't have ControlField tag '" + @tag + "')"
+      end
+
+      # allows MARC::Subfield objects to be passed directly
+      # or a shorthand of ['a','Foo'], ['b','Bar']
+      
+      self.initSubfields
+      
+      isubfields.each do |subfield| 
+        case subfield
+        when MARC::SubfieldMixin
+          self.append(subfield)
+        when Array
+          if subfield.length > 2
+            raise MARC::Exception.new(),
+              "arrays must only have 2 elements: " + subfield.to_s 
+          end
+          self.append(
+            self.class.subfieldclass.new(subfield[0],subfield[1]))
+        else 
+          raise MARC::Exception.new(), 
+            "invalid subfield type #{subfield.class}"
+        end
+      end
+    end
+    
 
     def to_hash
       field_hash = {tag=>{'ind1'=>indicator1,'ind2'=>indicator2,'subfields'=>[]}}
@@ -82,6 +144,11 @@ module MARC
   class DataField
     include DataFieldMixins
 
+    # Set up the subfield class as a class instance variable
+    def self.subfieldclass
+      MARC::Subfield
+    end
+    
     # The tag for the field
     attr_accessor :tag
 
@@ -94,65 +161,9 @@ module MARC
     # A list of MARC::Subfield objects
     attr_accessor :subfields
 
-
-    # Create a new field with tag, indicators and subfields.
-    # Subfields are passed in as comma separated list of 
-    # MARC::Subfield objects, 
-    # 
-    #   field = MARC::DataField.new('245','0','0',
-    #     MARC::Subfield.new('a', 'Consilience :'),
-    #     MARC::Subfield.new('b', 'the unity of knowledge ',
-    #     MARC::Subfield.new('c', 'by Edward O. Wilson.'))
-    # 
-    # or using a shorthand:
-    # 
-    #   field = MARC::DataField.new('245','0','0',
-    #     ['a', 'Consilience :'],['b','the unity of knowledge ',
-    #     ['c', 'by Edward O. Wilson.'] )
-
-    def initialize(tag, i1=' ', i2=' ', *subfields)
-      # if the tag is less than 3 characters long and 
-      # the string is all numeric then we pad with zeros
-      if tag.length < 3 and /^[0-9]*$/ =~ tag
-        @tag = "%03d" % tag
-      else
-        @tag = tag 
-      end
-      # can't allow nil to be passed in or else it'll 
-      # screw us up later when we try to encode
-      @indicator1 = i1 == nil ? ' ' : i1
-      @indicator2 = i2 == nil ? ' ' : i2
-      
+    def initSubfields
       @subfields = []
-
-      # must use MARC::ControlField for tags < 010 or
-      # those in MARC::ControlField#extra_control_fields
-      
-      if MARC::ControlField.control_tag?(@tag)
-        raise MARC::Exception.new(),
-          "MARC::DataField objects can't have ControlField tag '" + @tag + "')"
-      end
-
-      # allows MARC::Subfield objects to be passed directly
-      # or a shorthand of ['a','Foo'], ['b','Bar']
-      subfields.each do |subfield| 
-        case subfield
-        when MARC::Subfield
-          @subfields.push(subfield)
-        when Array
-          if subfield.length > 2
-            raise MARC::Exception.new(),
-              "arrays must only have 2 elements: " + subfield.to_s 
-          end
-          @subfields.push(
-            MARC::Subfield.new(subfield[0],subfield[1]))
-        else 
-          raise MARC::Exception.new(), 
-            "invalid subfield type #{subfield.class}"
-        end
-      end
     end
-
 
     # Returns a string representation of the field such as:
     #  245 00 $aConsilience :$bthe unity of knowledge $cby Edward O. Wilson.
