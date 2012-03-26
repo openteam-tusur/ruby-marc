@@ -108,7 +108,7 @@ class XMLTest < Test::Unit::TestCase
   def read_no_leading_zero_write_leading_zero_test(parser)
     reader = MARC::XMLReader.new('test/no-leading-zero.xml', :parser=>parser)
     record = reader.to_a[0]
-    assert_equal("042 zz $a dc ", record['042'].to_s)
+    assert_equal("042 zz $a dc", record['042'].to_s)
   end
 
   def test_leader_from_xml

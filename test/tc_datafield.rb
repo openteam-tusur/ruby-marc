@@ -29,7 +29,7 @@ class TestField < Test::Unit::TestCase
         f1 = MARC::DataField.new('100', '0', '1', 
             MARC::Subfield.new('a', 'Foo'),
             MARC::Subfield.new('b', 'Bar') )
-        assert_equal("100 01 $a Foo $b Bar ", f1.to_s)
+        assert_equal("100 01 $a Foo $b Bar", f1.to_s)
         assert_equal("FooBar", f1.value)
         f2 = MARC::DataField.new('100', '0', '1', 
             MARC::Subfield.new('a', 'Foo'),
@@ -43,7 +43,7 @@ class TestField < Test::Unit::TestCase
 
     def test_subfield_shorthand
         f  = MARC::DataField.new('100', '0', '1', ['a', 'Foo'], ['b', 'Bar'])
-        assert_equal('100 01 $a Foo $b Bar ', f.to_s)
+        assert_equal('100 01 $a Foo $b Bar', f.to_s)
     end
             
 
