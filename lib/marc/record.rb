@@ -40,7 +40,8 @@ module MARC
       end
     end
   end
-
+  
+  
   # A class that represents an individual MARC record. Every record
   # is made up of a collection of MARC::DataField objects. 
   #
@@ -68,11 +69,11 @@ module MARC
     def initialize
       @fields = FieldMap.new
       # leader is 24 bytes
-      @leader = ' ' * 24
+      self.leader = ' ' * 24
       # leader defaults:
       # http://www.loc.gov/marc/bibliographic/ecbdldrd.html
-      @leader[10..11] = '22'
-      @leader[20..23] = '4500'
+      self.leader[10..11] = '22'
+      self.leader[20..23] = '4500'
     end
 
     # add a field to the record
