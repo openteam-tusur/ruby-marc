@@ -16,8 +16,71 @@ module MARC
   # which can be accessed or modified by the client directly if
   # neccesary. 
 
-  class DataField
+
+  module DataFieldMixins
     include Enumerable
+
+    def to_hash
+      field_hash = {tag=>{'ind1'=>indicator1,'ind2'=>indicator2,'subfields'=>[]}}
+      self.each do |subfield|
+        field_hash[tag]['subfields'] << {subfield.code=>subfield.value}
+      end
+      field_hash
+    end
+
+    # Turn into a marc-hash structure
+    def to_marchash
+      return [tag, indicator1, indicator2, subfields.map {|sf| [sf.code, sf.value]} ]
+    end
+
+    # You can iterate through the subfields in a Field:
+    #   field.each {|s| print s}
+
+    def each
+      for subfield in subfields
+        yield subfield
+      end
+    end
+
+    def codes(dedup=true)
+      codes = []
+      subfields.each {|s| codes << s.code }
+      dedup ? codes.uniq : codes
+    end
+
+    # Two fields are equal if their tag, indicators and 
+    # subfields are all equal.
+
+    def ==(other)
+      if tag != other.tag
+        return false 
+      elsif indicator1 != other.indicator1
+        return false 
+      elsif indicator2 != other.indicator2
+        return false 
+      elsif subfields != other.subfields
+        return false
+      end
+      return true
+    end
+
+    def =~(regex)
+      return self.to_s =~ regex
+    end
+
+    # to get the field as a string, without the tag and indicators
+    # useful in situations where you want a legible version of the field
+    #
+    # print record['245'].value
+
+    def value
+      return(subfields.map {|s| s.value} .join '')
+    end
+  end
+
+
+  class DataField
+    include DataFieldMixins
 
     # The tag for the field
     attr_accessor :tag
@@ -101,21 +164,6 @@ module MARC
       return str
     end
 
-    # Turn into a marc-hash structure
-    def to_marchash
-      return [@tag, @indicator1, @indicator2, @subfields.map {|sf| [sf.code, sf.value]} ]
-    end
-    
-    # Turn the variable field and subfields into a hash for MARC-in-JSON
-    
-    def to_hash
-      field_hash = {@tag=>{'ind1'=>@indicator1,'ind2'=>@indicator2,'subfields'=>[]}}
-      self.each do |subfield|
-        field_hash[@tag]['subfields'] << {subfield.code=>subfield.value}
-      end
-      field_hash
-    end    
-
     # Add a subfield (MARC::Subfield) to the field
     #    field.append(MARC::Subfield.new('a','Dave Thomas'))
 
@@ -124,70 +172,10 @@ module MARC
     end
 
     
-
-    # You can iterate through the subfields in a Field:
-    #   field.each {|s| print s}
-
-    def each
-      for subfield in subfields
-        yield subfield
-      end
-    end
-
-    #def each_by_code(filter)
-    #  @subfields.each_by_code(filter)
-    #end
-
-    # You can lookup subfields with this shorthand. Note it 
-    # will return a string and not a MARC::Subfield object.
-    #   subfield = field['a']
-    
     def [](code)
       subfield = self.find {|s| s.code == code}
       return subfield.value if subfield
       return
-    end
- 
-
-    def codes(dedup=true)
-      codes = []
-      @subfields.each {|s| codes << s.code }
-      dedup ? codes.uniq : codes
-    end
-
-    # Two fields are equal if their tag, indicators and 
-    # subfields are all equal.
-
-    def ==(other)
-      if @tag != other.tag
-        return false 
-      elsif @indicator1 != other.indicator1
-        return false 
-      elsif @indicator2 != other.indicator2
-        return false 
-      elsif @subfields != other.subfields
-        return false
-      end
-      return true
-    end
-
-
-    # To support regex matching with fields
-    #
-    #   if field =~ /Huckleberry/ ...
-
-    def =~(regex)
-      return self.to_s =~ regex
-    end
-
-
-    # to get the field as a string, without the tag and indicators
-    # useful in situations where you want a legible version of the field
-    #
-    # print record['245'].value
-
-    def value
-      return(@subfields.map {|s| s.value} .join '')
     end
 
   end
