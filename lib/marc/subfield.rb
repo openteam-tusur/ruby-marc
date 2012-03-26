@@ -6,7 +6,8 @@ module MARC
   # not be set to nil. 
 
   module SubfieldMixin
-    def initialize(icode='' ,ivalue='')
+    def initialize(icode=nil ,ivalue=nil)
+      super()
       # can't allow code of value to be nil
       # or else it'll screw us up later on
       self.code = icode == nil ? '' : icode
@@ -23,7 +24,7 @@ module MARC
     end
 
     def to_s
-      return "$#{code} #{value} "
+      return "$#{code} #{value}"
     end
   end
   

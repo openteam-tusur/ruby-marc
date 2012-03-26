@@ -39,6 +39,7 @@ module MARC
     def initialize(itag, ii1=' ', ii2=' ', *isubfields)
       # if the tag is less than 3 characters long and 
       # the string is all numeric then we pad with zeros
+      super()
       if itag.length < 3 and /^[0-9]*$/ =~ itag
         self.tag = "%03d" % itag
       else
@@ -144,8 +145,7 @@ module MARC
 
     def to_s
       str = "#{tag} "
-      str += "#{indicator1}#{indicator2} " 
-      @subfields.each { |subfield| str += subfield.to_s }
+      str += "#{indicator1}#{indicator2} " + self.subfields.map{|s| s.to_s}.join(' ') 
       return str
     end
     

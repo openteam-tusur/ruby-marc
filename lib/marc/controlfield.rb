@@ -30,13 +30,6 @@ module MARC
   end
 
   module ControlFieldMixin
-    def initialize(tag,value='')
-      self.tag = tag
-      self.value = value
-      if not self.class.control_tag?(self.tag)
-        raise MARC::Exception.new(), "tag must be in 001-009 or in the control_tags set"
-      end
-    end
 
     # Two control fields are equal if their tags and values are equal.
 
@@ -79,6 +72,14 @@ module MARC
   class ControlField
     extend  ControlFieldClassMixin
     include ControlFieldMixin
+
+    def initialize(tag,value='')
+      self.tag = tag
+      self.value = value
+      if not self.class.control_tag?(self.tag)
+        raise MARC::Exception.new(), "tag must be in 001-009 or in the control_tags set"
+      end
+    end
     
     def self.hello
       puts "HELLO!!!!"
