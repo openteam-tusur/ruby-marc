@@ -31,7 +31,7 @@ module MARC
     def initialize(tag,value='')
       self.tag = tag
       self.value = value
-      if not MARC::ControlField.control_tag?(self.tag)
+      if not self.class.control_tag?(self.tag)
         raise MARC::Exception.new(), "tag must be in 001-009 or in the control_tags set"
       end
     end
@@ -66,6 +66,13 @@ module MARC
    end      
  end
   
+  
+  # ControlField must 'extend ControlFieldClassMixin' and
+  # 'include ControlFieldMixin'
+  #
+  # Additionally, it must provide
+  #  - tag, tag=
+  #  - value, value=
 
   class ControlField
     extend  ControlFieldClassMixin
@@ -76,10 +83,6 @@ module MARC
 
     # the value of the control field
     attr_accessor :value
-
-    # The constructor which must be passed a tag value and 
-    # an optional value for the field.
-
     
   end
 

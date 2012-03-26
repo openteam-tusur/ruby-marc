@@ -138,8 +138,32 @@ module MARC
     def value
       return(subfields.map {|s| s.value} .join '')
     end
+    
+    # Returns a string representation of the field such as:
+    #  245 00 $aConsilience :$bthe unity of knowledge $cby Edward O. Wilson.
+
+    def to_s
+      str = "#{tag} "
+      str += "#{indicator1}#{indicator2} " 
+      @subfields.each { |subfield| str += subfield.to_s }
+      return str
+    end
+    
+    
   end
 
+
+  # Datafield mixes in DataFieldMixins
+  #
+  # It requires:
+  #   - self.subfieldclass (returns the actual subfield class to use)
+  #   - tag, tag=
+  #   - indicator1, indicator1=, indicator2, indicator2=
+  #   - subfields (an array-like)
+  #   - initSubfields (initialize subfields to an empty array-like)
+  #   - append(subfield) -- append the given subfield or array of duples 
+  #     (see below)
+  #   - [](code) -- return the first subfield with the given code
 
   class DataField
     include DataFieldMixins
@@ -165,18 +189,12 @@ module MARC
       @subfields = []
     end
 
-    # Returns a string representation of the field such as:
-    #  245 00 $aConsilience :$bthe unity of knowledge $cby Edward O. Wilson.
-
-    def to_s
-      str = "#{tag} "
-      str += "#{indicator1}#{indicator2} " 
-      @subfields.each { |subfield| str += subfield.to_s }
-      return str
-    end
 
     # Add a subfield (MARC::Subfield) to the field
     #    field.append(MARC::Subfield.new('a','Dave Thomas'))
+    # Note that if your implementation needs to muck with the
+    # given subfield (by calling to_java, for example), you need 
+    # to do it here.
 
     def append(subfield)
       @subfields.push(subfield)
