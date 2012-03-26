@@ -6,6 +6,7 @@ module MARC
   # tag and value. Tags for control fields must be in the
   # 001-009 range or be specially added to the @@control_tags Set
 
+  
   module ControlFieldClassMixin
 
     # A tag is a control tag if it is a member of the @@control_tags set
@@ -13,16 +14,17 @@ module MARC
     # (e.g., '008'.to_i == 3 is in @@control_tags by default)
   
     # Initially, control tags are the numbers 1 through 9 or the string '000'
+    # We'll store them in a class instance variable
+    
+    attr_accessor :control_tags
+    
     def self.extended(klass)
-      klass.instance_eval 'class << self; attr_accessor :control_tags; end'
       klass.control_tags = Set.new( (1..9).to_a)
       klass.control_tags << '000'
-      
-      klass.instance_eval %q|
-        def self.control_tag?(tag)
-          return (@control_tags.include?(tag.to_i) or @control_tags.include?(tag))
-        end
-      |
+    end
+    
+    def control_tag?(tag)
+      return (@control_tags.include?(tag.to_i) or @control_tags.include?(tag))
     end
  
   end
