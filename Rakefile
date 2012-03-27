@@ -1,4 +1,4 @@
-RUBY_MARC_VERSION = '0.5.0'
+RUBY_MARC_VERSION = '0.4.5'
 
 require 'rubygems'
 require 'rake'
