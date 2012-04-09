@@ -1,0 +1,11 @@
+pkg/*
+test/t
+bench/*out
+bench/*txt
+bench/*json
+bench/*ndj
+bench/*mrc
+bench/*dat
+bench/*xml
+*~
+#*
